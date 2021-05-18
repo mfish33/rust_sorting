@@ -6,6 +6,7 @@ mod merge_sort;
 mod par_merge_sort;
 mod merge_sort_pre_alloc;
 mod std_sort;
+mod rayon_sort;
 
 pub use bubble_sort::BubbleSort;
 pub use insertion_sort::InsertionSort;
@@ -15,7 +16,7 @@ pub use merge_sort::MergeSort;
 pub use par_merge_sort::ParMergeSort;
 pub use merge_sort_pre_alloc::MergeSortPreAlloc;
 pub use std_sort::StdSort;
-
+pub use rayon_sort::RayonSort;
 
 
 // Trait Alias

@@ -1,4 +1,5 @@
 use super::{Sorter, MergeSort, Sortable, MergeSortPreAlloc};
+use std::sync::Arc;
 use rayon::prelude::*;
 
 pub struct ParMergeSort;
@@ -11,7 +12,7 @@ impl Sorter for ParMergeSort {
             return
         }
 
-        let mut threads = rayon::current_num_threads() - 1;
+        let mut threads = rayon::current_num_threads();
         if slice.len() / threads <= 2 {
             threads = 1;
         }
@@ -19,20 +20,32 @@ impl Sorter for ParMergeSort {
         let chunk_size = slice.len() / threads + 1;
         slice
         .par_chunks_mut(chunk_size)
-        .for_each(|slice|{
-            MergeSortPreAlloc.sort(slice);
+        .for_each(|chunk|{
+            MergeSortPreAlloc.sort(chunk);
         });
 
-        for i in 2..=threads {
-            let arr_end = if chunk_size * i < slice.len() {
-                chunk_size * i
-            } else {
-                slice.len()
-            };
-            MergeSort.merge(&mut slice[0..arr_end], chunk_size * (i-1))
+        let mut chunks:Vec<_> = slice.chunks_mut(chunk_size).map(|chunk| Arc::new(chunk)).collect();
+
+        while chunks.len() > 1 {
+            chunks = chunks
+            .par_chunks_mut(2)
+            .map(|group|{
+                if group.len() < 2 {
+                    group[0].clone()
+                } else {
+                    let mid = group[0].len();
+                    unsafe {
+                        let slice = std::slice::from_raw_parts_mut(group[0].as_ptr() as *mut T, group[0].len() + group[1].len());
+                        MergeSort.merge(slice, mid);
+                        Arc::new(slice)
+                    }
+                    
+                }
+            }).collect();
         }
     }
 }
+
 
 #[cfg(test)]
 mod tests {

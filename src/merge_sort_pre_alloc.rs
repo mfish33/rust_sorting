@@ -2,19 +2,6 @@ use super::{Sorter, Sortable};
 
 pub struct MergeSortPreAlloc;
 
-trait ToVecRev {
-    type Item;
-    fn to_vec_rev(&self) -> Vec<Self::Item>;
-}
-
-impl<T:Clone> ToVecRev for &mut [T] {
-    type Item = T;
-    fn to_vec_rev(&self) -> Vec<T> {
-        self.iter().rev().map(|v|v.clone()).collect()
-    }
-}
-
-
 impl MergeSortPreAlloc {
 
     pub fn sort_runner<T:Sortable>(&self, slice: &mut [T], left_buffer:&mut Vec<T>, right_buffer:&mut Vec<T>) {
